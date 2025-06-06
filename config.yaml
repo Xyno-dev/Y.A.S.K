@@ -1,0 +1,197 @@
+units:
+  kx: cx
+  ky: cy
+  px: kx + 4
+  py: ky + 4
+  dpx: kx + 8
+  dpy: ky + 8
+  screwSize: 1
+points:
+  zones:
+    matrix:
+      anchor:
+        shift: [100, -100]
+      key:
+        padding: 1ky
+        spread: 1kx
+      columns:
+        one:
+          key.column_net: P18
+        two:
+          key.column_net: P19
+        three:
+          key.column_net: P20
+        four:
+          key.column_net: P21
+        five:
+          key.column_net: P9
+        six:
+          key.column_net: P8
+        seven:
+          key.column_net: P7
+        eight:
+          key.column_net: P6
+        nine:
+          key.column_net: P5
+        ten:
+          key.column_net: P4
+        eleven:
+          key.column_net: P3
+        twelve:
+          key.column_net: P2
+      rows:
+        mod:
+          row_net: P10
+        bottom:
+          row_net: P16
+        home:
+          row_net: P14
+        top:
+          row_net: P15
+outlines:
+  raw:
+    - what: rectangle
+      where: true
+      bound: true
+      size: [px, py]
+  keys:
+    - what: rectangle
+      where: true
+      bound: false
+      size: [kx-0.5,ky-0.5]
+  board:
+    - what: polygon
+      operation: stack
+      points:
+        - ref: matrix_one_top
+          shift: [-2px,0.5py]
+        - ref: matrix_twelve_top
+          shift: [0.5px,0.5py]
+        - ref: matrix_twelve_mod
+          shift: [0.5px,-0.5py]
+        - ref: matrix_one_mod
+          shift: [-2px,-0.5py]
+      fillet: 2
+  bigboard:
+    - what: polygon
+      operation: stack
+      points:
+        - ref: matrix_one_top
+          shift: [-2dpx,0.5dpy]
+        - ref: matrix_twelve_top
+          shift: [0.5dpx,0.5dpy]
+        - ref: matrix_twelve_mod
+          shift: [0.5dpx,-0.5dpy]
+        - ref: matrix_one_mod
+          shift: [-2dpx,-0.5dpy]
+      fillet: 2
+  mounting:
+    - what: circle
+      radius: screwSize
+      where:
+        ref: [matrix_one_top]
+        shift: [-38, 8]
+    - what: circle
+      radius: screwSize
+      where:
+        ref: [matrix_one_mod]
+        shift: [-38, -8]
+    - what: circle
+      radius: screwSize
+      where:
+        ref: [matrix_twelve_top]
+        shift: [8, 8]
+    - what: circle
+      radius: screwSize
+      where:
+        ref: [matrix_twelve_mod]
+        shift: [8, -8]
+  combo:
+    - name: board
+    - operation: subtract
+      name: keys
+pcbs:
+  pcb:
+    template: kicad8
+    outlines:
+      main:
+        outline: board
+    footprints:
+        choc_hotswap:
+          what: ceoloide/switch_choc_v1_v2
+          where: true
+          params:
+            hotswap: true
+            from: "{{column_net}}"
+            to: "{{colrow}}"
+        diode:
+          what: ceoloide/diode_tht_sod123
+          where: true
+          params:
+            from: "{{colrow}}"
+            to: "{{row_net}}"
+            include_tht: true
+            side: 'F'
+          adjust:
+            shift: [3, -5]
+        supermini:
+          what: ceoloide/mcu_supermini_nrf52840
+          params:
+          where:
+            ref: matrix_one_top
+            shift: [-25, -6]
+            rotate: 0
+        holeTopLeft:
+          what: ceoloide/mounting_hole_npth
+          where:
+            ref: [matrix_one_top]
+            shift: [-38, 8]
+        holeBottomLeft:
+          what: ceoloide/mounting_hole_npth
+          where:
+            ref: [matrix_one_mod]
+            shift: [-38, -8]
+        holeTopRight:
+          what: ceoloide/mounting_hole_npth
+          where:
+            ref: [matrix_twelve_top]
+            shift: [8, 8]
+        holeBottomRight:
+          what: ceoloide/mounting_hole_npth
+          where:
+            ref: [matrix_twelve_mod]
+            shift: [8, -8]
+cases:
+  bottom:
+    - name: board
+      extrude: 1
+  bigbottom:
+    - name: bigboard
+      extrude: 1
+  _outerWall:
+    - name: bigboard
+      extrude: 4
+  _innerWall:
+    - name: board
+      extrude: 4
+  _holes:
+    - name: mounting
+      extrude: 4
+  wall:
+    - what: case
+      name: _outerWall
+      operation: add
+    - what: case
+      name: _innerWall
+      operation: subtract
+  case:
+    - what: case
+      name: bigbottom
+      operation: add
+    - what: case
+      name: _holes
+      operation: add
+    - what: case
+      name: wall
+      operation: add
+
